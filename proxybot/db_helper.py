@@ -85,7 +85,8 @@ class ChatDAO(DAO):
         return self._get_page(page_no, page_size, {'type': 'private', 'blocked': False})
 
     def get_groups_page(self, page_no=1, page_size=5):
-        query = {'$or': [{'type': 'group'}, {'type': 'supergroup'}], 'blocked': False}
+        query = {'$or': [{'type': 'group'}, {
+            'type': 'supergroup'}], 'blocked': False}
         return self._get_page(page_no, page_size, query)
 
     def get_channels_page(self, page_no=1, page_size=5):
@@ -100,7 +101,8 @@ class MessageDAO(DAO):
         super().__init__(coll, model.Message, bot_id)
 
     def get_chat_page(self, chat_id, page_no=0, page_size=4):
-        cursor = self.coll.find({'bot_id': self.bot_id, 'chat.id': chat_id}).sort('_id', 1)
+        cursor = self.coll.find(
+            {'bot_id': self.bot_id, 'chat.id': chat_id}).sort('_id', 1)
         count = cursor.count()
         if count < 1:
             return 0, None
@@ -117,7 +119,8 @@ class MessageDAO(DAO):
         )
 
     def get_by_shortid(self, shortid):
-        db_rec = self.coll.find_one({'bot_id': self.bot_id, 'short_id': shortid})
+        db_rec = self.coll.find_one(
+            {'bot_id': self.bot_id, 'short_id': shortid})
         return self.type(**db_rec) if db_rec else None
 
 
@@ -169,7 +172,8 @@ class CommonData:
 
     @property
     def replying_to(self):
-        if time() - self._replying_to_update > self._replying_to_expiration:  # if admin wasn't here for a quite long time
+        # if admin wasn't here for a quite long time
+        if time() - self._replying_to_update > self._replying_to_expiration:
             self._replying_to = None  # ignore last replying_to
         return self._replying_to
 
@@ -210,12 +214,13 @@ class BotsDAO(DAO):
         db_rec = self.coll.find_one({'master_id': master_id})
         return self.type(**db_rec) if db_rec else None
 
+
 db_client = MongoClient(config.db_auth)
 db = db_client[config.db_name]
 
 
 def get_coll(coll_name):
-    if coll_name not in db.collection_names():
+    if coll_name not in db.list_collection_names():
         db.create_collection(coll_name)
     return db[coll_name]
 
